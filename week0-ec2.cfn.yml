@@ -27,5 +27,5 @@ Resources:
 Outputs:
   PublicIp:
     Description: EC2 Instance public IP
-    Value: EC2Instance.PublicIP
+    Value: !GetAtt Instance.PublicIp
     
