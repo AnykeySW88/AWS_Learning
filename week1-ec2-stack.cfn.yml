@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create an autoscaling group using t2.micro EC2 instances, 2 AZ and Java install
+
+Resources:
+  
+  MyLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: Week1-asg
+      LaunchTemplateData:
+        ImageId: ami-0747e613a2a1ff483
+        InstanceType: t2.micro
+        KeyName: app-key-pair
+        SecurityGroups: 
+        - !Ref MySecurityGroup
+        UserData: 
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            yum update -y 
+            sudo yum install java -y
+
+  MySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow inbound traffic from HTTP and SSH
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+        - CidrIp: 0.0.0.0/0
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+
+  MyASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !Ref MyLaunchTemplate
+        Version: !GetAtt MyLaunchTemplate.LatestVersionNumber
+      MinSize: 2
+      MaxSize: 5
+      DesiredCapacity: 2
+      AvailabilityZones: 
+      - us-west-2a
+      - us-west-2b
